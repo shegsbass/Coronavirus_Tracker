@@ -13,8 +13,10 @@ import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
+import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 
 @Service
 public class CoronaVirusDataService {
@@ -43,11 +45,18 @@ public class CoronaVirusDataService {
         StringReader csvBodyReader = new StringReader(httpResponse.body());
         Iterable<CSVRecord> records = CSVFormat.DEFAULT.withFirstRecordAsHeader().parse(csvBodyReader);
         for (CSVRecord record : records) {
+//            System.out.println("Show record: "+ record);
             LocationStat locationStat = new LocationStat();
             locationStat.setState(record.get("Province/State"));
             locationStat.setCountry(record.get("Country/Region"));
-            locationStat.setLatestTotalCases(Integer.parseInt(record.get(record.size()-1)));
-            System.out.println(locationStat);
+//            int size = record.size() -1;
+//            String recordGotten = record.get(size);
+//            int recordInt = Integer.parseInt(recordGotten);
+//            locationStat.setLatestTotalCases(recordInt);
+            int latestCases = Integer.parseInt(record.get(record.size() -1));
+            int prevDayCases = Integer.parseInt(record.get(record.size() -2));
+            locationStat.setLatestTotalCases(latestCases);
+            locationStat.setDiffFromPrevDay(latestCases - prevDayCases);
             newStats.add(locationStat);
         }
         this.allStats = newStats;
